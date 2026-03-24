@@ -71,9 +71,9 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		3954A4D72F72160B003648C0 /* AccountBook */ = {
+		3954A4D72F72160B003648C0 /* BeeHive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AccountBook;
+			path = BeeHive;
 			sourceTree = "<group>";
 		};
 		3954A4E72F72160C003648C0 /* AccountBookTests */ = {
@@ -134,7 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				3954A52A2F733F06003648C0 /* BeeHiveWidgetExtension.entitlements */,
-				3954A4D72F72160B003648C0 /* AccountBook */,
+				3954A4D72F72160B003648C0 /* BeeHive */,
 				3954A4E72F72160C003648C0 /* AccountBookTests */,
 				3954A4F12F72160C003648C0 /* AccountBookUITests */,
 				3954A5192F733BA5003648C0 /* BeeHiveWidget */,
@@ -181,7 +181,7 @@
 				3954A5222F733BA6003648C0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				3954A4D72F72160B003648C0 /* AccountBook */,
+				3954A4D72F72160B003648C0 /* BeeHive */,
 			);
 			name = AccountBook;
 			packageProductDependencies = (
@@ -508,7 +508,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = AccountBook/AccountBook.entitlements;
+				CODE_SIGN_ENTITLEMENTS = BeeHive/AccountBook.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Z65M8FMZDN;
@@ -517,6 +517,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = BeeHive;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -553,7 +554,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = AccountBook/AccountBook.entitlements;
+				CODE_SIGN_ENTITLEMENTS = BeeHive/AccountBook.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Z65M8FMZDN;
@@ -562,6 +563,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = BeeHive;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

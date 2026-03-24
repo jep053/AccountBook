@@ -213,37 +213,53 @@ struct ContentView: View {
     @State private var showingAddExpense = false
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // 꿀벌 스트릭 카드
-                    HoneyStreakCard(store: store)
-                    
-                    // 오늘 / 이번달 요약
-                    SummaryCard(store: store)
-                    
-                    // 오늘 지출 내역
-                    TodayExpensesList(store: store)
+        TabView {
+            // 홈 탭
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        HoneyStreakCard(store: store)
+                        SummaryCard(store: store)
+                        TodayExpensesList(store: store)
+                    }
+                    .padding()
                 }
-                .padding()
-            }
-            .navigationTitle("🐝 BeeHive")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddExpense = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.yellow)
+                .navigationTitle("🐝 BeeHive")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { showingAddExpense = true }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.yellow)
+                        }
                     }
                 }
+                .sheet(isPresented: $showingAddExpense) {
+                    AddExpenseView(store: store)
+                }
+                .onAppear {
+                    store.requestNotificationPermission()
+                }
             }
-            .sheet(isPresented: $showingAddExpense) {
-                AddExpenseView(store: store)
+            .tabItem {
+                Image(systemName: "house.fill")
+                Text("Home")
             }
-            .onAppear {
-                store.requestNotificationPermission()
-            }
+            
+            // 통계 탭
+            StatsView(store: store)
+                .tabItem {
+                    Image(systemName: "chart.bar.fill")
+                    Text("Stats")
+                }
+            // Settings 탭
+            SettingsView()
+                .tabItem {
+                    Image(systemName: "gearshape.fill")
+                    Text("Settings")
+                }
         }
+        .accentColor(.yellow)
     }
 }
 
