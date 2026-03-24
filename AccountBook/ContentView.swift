@@ -1,5 +1,7 @@
 import SwiftUI
 import Combine
+import WidgetKit
+import UserNotifications
 
 // MARK: - Data Models
 struct Expense: Identifiable, Codable {
@@ -65,6 +67,32 @@ class BeeHiveStore: ObservableObject {
     init() {
         load()
         updateStreak()
+    }
+    
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            if granted {
+                self.scheduleEveningReminder()
+            }
+        }
+    }
+
+    func scheduleEveningReminder() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["beehive_evening"])
+        
+        let content = UNMutableNotificationContent()
+        content.title = "🐝 BeeHive"
+        content.body = "Don't forget to log your expenses today!"
+        content.sound = .default
+        
+        var dateComponents = DateComponents()
+        dateComponents.hour = 21  // 저녁 9시
+        dateComponents.minute = 0
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        let request = UNNotificationRequest(identifier: "beehive_evening", content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request)
     }
     
     // 꿀 상태
@@ -156,21 +184,26 @@ class BeeHiveStore: ObservableObject {
         }
     }
     
+    private var sharedDefaults: UserDefaults {
+        UserDefaults(suiteName: "group.com.jeongmin.beehive") ?? UserDefaults.standard
+    }
+    
     private func save() {
         if let encoded = try? JSONEncoder().encode(expenses) {
-            UserDefaults.standard.set(encoded, forKey: expensesKey)
+            sharedDefaults.set(encoded, forKey: expensesKey)
         }
-        UserDefaults.standard.set(streak, forKey: streakKey)
-        UserDefaults.standard.set(lastLoggedDate, forKey: lastLoggedKey)
+        sharedDefaults.set(streak, forKey: streakKey)
+        sharedDefaults.set(lastLoggedDate, forKey: lastLoggedKey)
+        WidgetCenter.shared.reloadAllTimelines()
     }
     
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: expensesKey),
+        if let data = sharedDefaults.data(forKey: expensesKey),
            let decoded = try? JSONDecoder().decode([Expense].self, from: data) {
             expenses = decoded
         }
-        streak = UserDefaults.standard.integer(forKey: streakKey)
-        lastLoggedDate = UserDefaults.standard.object(forKey: lastLoggedKey) as? Date
+        streak = sharedDefaults.integer(forKey: streakKey)
+        lastLoggedDate = sharedDefaults.object(forKey: lastLoggedKey) as? Date
     }
 }
 
@@ -206,6 +239,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingAddExpense) {
                 AddExpenseView(store: store)
+            }
+            .onAppear {
+                store.requestNotificationPermission()
             }
         }
     }

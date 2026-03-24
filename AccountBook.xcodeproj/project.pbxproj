@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3954A5162F733BA5003648C0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3954A5152F733BA5003648C0 /* WidgetKit.framework */; };
+		3954A5182F733BA5003648C0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3954A5172F733BA5003648C0 /* SwiftUI.framework */; };
+		3954A5232F733BA6003648C0 /* BeeHiveWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3954A5132F733BA5003648C0 /* BeeHiveWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3954A4E52F72160C003648C0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,13 +27,48 @@
 			remoteGlobalIDString = 3954A4D42F72160B003648C0;
 			remoteInfo = AccountBook;
 		};
+		3954A5212F733BA6003648C0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3954A4CD2F72160B003648C0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3954A5122F733BA5003648C0;
+			remoteInfo = BeeHiveWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3954A5242F733BA6003648C0 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				3954A5232F733BA6003648C0 /* BeeHiveWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		3954A4D52F72160B003648C0 /* AccountBook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AccountBook.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3954A4E42F72160C003648C0 /* AccountBookTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AccountBookTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3954A4EE2F72160C003648C0 /* AccountBookUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AccountBookUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3954A5132F733BA5003648C0 /* BeeHiveWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BeeHiveWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3954A5152F733BA5003648C0 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		3954A5172F733BA5003648C0 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		3954A52A2F733F06003648C0 /* BeeHiveWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BeeHiveWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3954A5272F733BA6003648C0 /* Exceptions for "BeeHiveWidget" folder in "BeeHiveWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3954A5122F733BA5003648C0 /* BeeHiveWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3954A4D72F72160B003648C0 /* AccountBook */ = {
@@ -43,6 +84,14 @@
 		3954A4F12F72160C003648C0 /* AccountBookUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AccountBookUITests;
+			sourceTree = "<group>";
+		};
+		3954A5192F733BA5003648C0 /* BeeHiveWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3954A5272F733BA6003648C0 /* Exceptions for "BeeHiveWidget" folder in "BeeHiveWidgetExtension" target */,
+			);
+			path = BeeHiveWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,15 +118,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3954A5102F733BA5003648C0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3954A5182F733BA5003648C0 /* SwiftUI.framework in Frameworks */,
+				3954A5162F733BA5003648C0 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		3954A4CC2F72160B003648C0 = {
 			isa = PBXGroup;
 			children = (
+				3954A52A2F733F06003648C0 /* BeeHiveWidgetExtension.entitlements */,
 				3954A4D72F72160B003648C0 /* AccountBook */,
 				3954A4E72F72160C003648C0 /* AccountBookTests */,
 				3954A4F12F72160C003648C0 /* AccountBookUITests */,
+				3954A5192F733BA5003648C0 /* BeeHiveWidget */,
+				3954A5142F733BA5003648C0 /* Frameworks */,
 				3954A4D62F72160B003648C0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,8 +149,18 @@
 				3954A4D52F72160B003648C0 /* AccountBook.app */,
 				3954A4E42F72160C003648C0 /* AccountBookTests.xctest */,
 				3954A4EE2F72160C003648C0 /* AccountBookUITests.xctest */,
+				3954A5132F733BA5003648C0 /* BeeHiveWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		3954A5142F733BA5003648C0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3954A5152F733BA5003648C0 /* WidgetKit.framework */,
+				3954A5172F733BA5003648C0 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,10 +173,12 @@
 				3954A4D12F72160B003648C0 /* Sources */,
 				3954A4D22F72160B003648C0 /* Frameworks */,
 				3954A4D32F72160B003648C0 /* Resources */,
+				3954A5242F733BA6003648C0 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3954A5222F733BA6003648C0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				3954A4D72F72160B003648C0 /* AccountBook */,
@@ -163,6 +236,28 @@
 			productReference = 3954A4EE2F72160C003648C0 /* AccountBookUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		3954A5122F733BA5003648C0 /* BeeHiveWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3954A5282F733BA6003648C0 /* Build configuration list for PBXNativeTarget "BeeHiveWidgetExtension" */;
+			buildPhases = (
+				3954A50F2F733BA5003648C0 /* Sources */,
+				3954A5102F733BA5003648C0 /* Frameworks */,
+				3954A5112F733BA5003648C0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3954A5192F733BA5003648C0 /* BeeHiveWidget */,
+			);
+			name = BeeHiveWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = BeeHiveWidgetExtension;
+			productReference = 3954A5132F733BA5003648C0 /* BeeHiveWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -184,6 +279,9 @@
 						CreatedOnToolsVersion = 26.3;
 						TestTargetID = 3954A4D42F72160B003648C0;
 					};
+					3954A5122F733BA5003648C0 = {
+						CreatedOnToolsVersion = 26.3;
+					};
 				};
 			};
 			buildConfigurationList = 3954A4D02F72160B003648C0 /* Build configuration list for PBXProject "AccountBook" */;
@@ -203,6 +301,7 @@
 				3954A4D42F72160B003648C0 /* AccountBook */,
 				3954A4E32F72160C003648C0 /* AccountBookTests */,
 				3954A4ED2F72160C003648C0 /* AccountBookUITests */,
+				3954A5122F733BA5003648C0 /* BeeHiveWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +322,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3954A4EC2F72160C003648C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3954A5112F733BA5003648C0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,6 +359,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3954A50F2F733BA5003648C0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -265,6 +378,11 @@
 			isa = PBXTargetDependency;
 			target = 3954A4D42F72160B003648C0 /* AccountBook */;
 			targetProxy = 3954A4EF2F72160C003648C0 /* PBXContainerItemProxy */;
+		};
+		3954A5222F733BA6003648C0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3954A5122F733BA5003648C0 /* BeeHiveWidgetExtension */;
+			targetProxy = 3954A5212F733BA6003648C0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -390,6 +508,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AccountBook/AccountBook.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Z65M8FMZDN;
@@ -434,6 +553,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AccountBook/AccountBook.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Z65M8FMZDN;
@@ -575,6 +695,73 @@
 			};
 			name = Release;
 		};
+		3954A5252F733BA6003648C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = BeeHiveWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z65M8FMZDN;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BeeHiveWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BeeHiveWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeongmin.AccountBook.BeeHiveWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3954A5262F733BA6003648C0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = BeeHiveWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z65M8FMZDN;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BeeHiveWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BeeHiveWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeongmin.AccountBook.BeeHiveWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -610,6 +797,15 @@
 			buildConfigurations = (
 				3954A4FF2F72160C003648C0 /* Debug */,
 				3954A5002F72160C003648C0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3954A5282F733BA6003648C0 /* Build configuration list for PBXNativeTarget "BeeHiveWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3954A5252F733BA6003648C0 /* Debug */,
+				3954A5262F733BA6003648C0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
