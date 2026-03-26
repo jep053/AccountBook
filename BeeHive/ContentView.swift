@@ -212,6 +212,8 @@ struct ContentView: View {
     @StateObject private var store = BeeHiveStore()
     @State private var showingAddExpense = false
     
+    @State private var showingSimulator = false
+    
     var body: some View {
         TabView {
             // 홈 탭
@@ -221,6 +223,47 @@ struct ContentView: View {
                         HoneyStreakCard(store: store)
                         SummaryCard(store: store)
                         TodayExpensesList(store: store)
+                        
+                        // 시뮬레이터 버튼
+                        Button(action: { showingSimulator = true }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("🐝 Path to Freedom")
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.primary)
+                                    Text("See when you'll be financially free")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .background(Color.yellow.opacity(0.15))
+                            .cornerRadius(16)
+                        }
+                        .sheet(isPresented: $showingSimulator) {
+                            NavigationView {
+                                SimulatorView()
+                                    .toolbar {
+                                        ToolbarItem(placement: .navigationBarTrailing) {
+                                            Button("Done") { showingSimulator = false }
+                                        }
+                                    }
+                            }
+                        }
+                        
+                        .sheet(isPresented: $showingSimulator) {
+                            NavigationView {
+                                SimulatorView()
+                                    .toolbar {
+                                        ToolbarItem(placement: .navigationBarTrailing) {
+                                            Button("Done") { showingSimulator = false }
+                                        }
+                                    }
+                            }
+                        }
                     }
                     .padding()
                 }
@@ -250,14 +293,22 @@ struct ContentView: View {
             StatsView(store: store)
                 .tabItem {
                     Image(systemName: "chart.bar.fill")
-                    Text("Stats")
+                    Text("Spending")
                 }
+            // 자산 탭
+            AssetsView()
+                .tabItem {
+                    Image(systemName: "chart.pie.fill")
+                    Text("Assets")
+                }
+            
             // Settings 탭
             SettingsView()
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Settings")
                 }
+            
         }
         .accentColor(.yellow)
     }
