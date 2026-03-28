@@ -19,29 +19,17 @@ struct RecurringExpense: Identifiable, Codable {
 // MARK: - Recurring Store
 class RecurringStore: ObservableObject {
     @Published var items: [RecurringExpense] = []
-    
     private let key = "beehive_recurring"
     
     init() { load() }
     
-    var monthlyTotal: Double {
-        items.reduce(0) { $0 + $1.amount }
-    }
+    var monthlyTotal: Double { items.reduce(0) { $0 + $1.amount } }
     
-    func add(_ item: RecurringExpense) {
-        items.append(item)
-        save()
-    }
-    
-    func delete(at offsets: IndexSet) {
-        items.remove(atOffsets: offsets)
-        save()
-    }
-    
+    func add(_ item: RecurringExpense) { items.append(item); save() }
+    func delete(at offsets: IndexSet) { items.remove(atOffsets: offsets); save() }
     func update(_ item: RecurringExpense) {
         if let index = items.firstIndex(where: { $0.id == item.id }) {
-            items[index] = item
-            save()
+            items[index] = item; save()
         }
     }
     
@@ -50,7 +38,6 @@ class RecurringStore: ObservableObject {
             UserDefaults.standard.set(encoded, forKey: key)
         }
     }
-    
     private func load() {
         if let data = UserDefaults.standard.data(forKey: key),
            let decoded = try? JSONDecoder().decode([RecurringExpense].self, from: data) {
@@ -61,6 +48,7 @@ class RecurringStore: ObservableObject {
 
 // MARK: - Recurring View
 struct RecurringView: View {
+    @EnvironmentObject var languageManager: LanguageManager
     @ObservedObject var store: RecurringStore
     @State private var showingAdd = false
     @Environment(\.dismiss) var dismiss
@@ -70,22 +58,20 @@ struct RecurringView: View {
             List {
                 Section {
                     HStack {
-                        Text("Monthly Fixed Total")
-                            .fontWeight(.medium)
+                        Text("recurring.monthlyTotal").fontWeight(.medium)
                         Spacer()
-                        Text("$\(store.monthlyTotal, specifier: "%.0f")")
+                        Text(formatCurrency(store.monthlyTotal))
                             .fontWeight(.bold)
                             .foregroundColor(.orange)
                     }
                     .padding(.vertical, 4)
                 }
                 
-                Section("Fixed Expenses") {
+                Section(L( "recurring.section.fixed")) {
                     if store.items.isEmpty {
                         VStack(spacing: 8) {
-                            Text("📋")
-                                .font(.system(size: 36))
-                            Text("No fixed expenses yet!")
+                            Text("📋").font(.system(size: 36))
+                            Text("recurring.empty.title")
                                 .foregroundColor(.secondary)
                                 .font(.subheadline)
                         }
@@ -99,16 +85,15 @@ struct RecurringView: View {
                     }
                 }
             }
-            .navigationTitle("📋 Fixed Expenses")
+            .navigationTitle("recurring.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") { dismiss() }
+                    Button("recurring.done") { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAdd = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.orange)
+                        Image(systemName: "plus.circle.fill").foregroundColor(.orange)
                     }
                 }
             }
@@ -116,6 +101,7 @@ struct RecurringView: View {
                 AddRecurringView(store: store)
             }
         }
+        .refreshOnLanguageChange()
     }
 }
 
@@ -132,18 +118,14 @@ struct RecurringRow: View {
                 .frame(width: 40, height: 40)
                 .background(item.category.color.opacity(0.15))
                 .cornerRadius(10)
-            
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.name)
-                    .fontWeight(.medium)
-                Text(item.category.rawValue)
+                Text(item.name).fontWeight(.medium)
+                Text(item.category.localizedName)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            
             Spacer()
-            
-            Text("$\(item.amount, specifier: "%.0f")/mo")
+            Text("\(formatCurrency(item.amount))\(L("recurring.perMonth"))")
                 .fontWeight(.semibold)
                 .foregroundColor(.orange)
         }
@@ -159,7 +141,6 @@ struct RecurringRow: View {
 struct AddRecurringView: View {
     @ObservedObject var store: RecurringStore
     @Environment(\.dismiss) var dismiss
-    
     @State private var name = ""
     @State private var amount = ""
     @State private var selectedCategory: ExpenseCategory = .live
@@ -167,21 +148,19 @@ struct AddRecurringView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Details") {
-                    TextField("Name (e.g. Rent, Netflix)", text: $name)
-                    TextField("Monthly Amount", text: $amount)
+                Section(L( "recurring.section.details")) {
+                    TextField("recurring.name.placeholder", text: $name)
+                    TextField("recurring.amount.placeholder", text: $amount)
                         .keyboardType(.numberPad)
                 }
-                
-                Section("Category") {
+                Section(L( "recurring.section.category")) {
                     ForEach(ExpenseCategory.allCases, id: \.self) { category in
                         HStack {
                             Text(category.icon)
-                            Text(category.rawValue)
+                            Text(category.localizedName)
                             Spacer()
                             if selectedCategory == category {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.orange)
+                                Image(systemName: "checkmark").foregroundColor(.orange)
                             }
                         }
                         .contentShape(Rectangle())
@@ -189,14 +168,14 @@ struct AddRecurringView: View {
                     }
                 }
             }
-            .navigationTitle("Add Fixed Expense")
+            .navigationTitle("recurring.add.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button("recurring.cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") { save() }
+                    Button("recurring.save") { save() }
                         .fontWeight(.bold)
                         .disabled(name.isEmpty || amount.isEmpty)
                 }
@@ -216,7 +195,6 @@ struct EditRecurringView: View {
     let item: RecurringExpense
     @ObservedObject var store: RecurringStore
     @Environment(\.dismiss) var dismiss
-    
     @State private var name: String
     @State private var amount: String
     @State private var selectedCategory: ExpenseCategory
@@ -232,30 +210,27 @@ struct EditRecurringView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Details") {
-                    TextField("Name", text: $name)
-                    TextField("Monthly Amount", text: $amount)
+                Section(L( "recurring.section.details")) {
+                    TextField("recurring.name.edit.placeholder", text: $name)
+                    TextField("recurring.amount.placeholder", text: $amount)
                         .keyboardType(.numberPad)
                 }
-                
-                Section("Category") {
+                Section(L( "recurring.section.category")) {
                     ForEach(ExpenseCategory.allCases, id: \.self) { category in
                         HStack {
                             Text(category.icon)
-                            Text(category.rawValue)
+                            Text(category.localizedName)
                             Spacer()
                             if selectedCategory == category {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.orange)
+                                Image(systemName: "checkmark").foregroundColor(.orange)
                             }
                         }
                         .contentShape(Rectangle())
                         .onTapGesture { selectedCategory = category }
                     }
                 }
-                
                 Section {
-                    Button("Delete") {
+                    Button("recurring.delete") {
                         if let index = store.items.firstIndex(where: { $0.id == item.id }) {
                             store.delete(at: IndexSet([index]))
                         }
@@ -264,14 +239,14 @@ struct EditRecurringView: View {
                     .foregroundColor(.red)
                 }
             }
-            .navigationTitle("Edit Fixed Expense")
+            .navigationTitle("recurring.edit.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button("recurring.cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") { save() }
+                    Button("recurring.save") { save() }
                         .fontWeight(.bold)
                         .disabled(name.isEmpty || amount.isEmpty)
                 }
@@ -281,9 +256,7 @@ struct EditRecurringView: View {
     
     func save() {
         guard let amountDouble = Double(amount) else { return }
-        var updated = item
-        updated = RecurringExpense(id: item.id, name: name, amount: amountDouble, category: selectedCategory)
-        store.update(updated)
+        store.update(RecurringExpense(id: item.id, name: name, amount: amountDouble, category: selectedCategory))
         dismiss()
     }
 }

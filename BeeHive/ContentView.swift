@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 import WidgetKit
 import UserNotifications
-
+ 
 // MARK: - Data Models
 struct Expense: Identifiable, Codable {
     let id: UUID
@@ -19,7 +19,7 @@ struct Expense: Identifiable, Codable {
         self.date = date
     }
 }
-
+ 
 enum ExpenseCategory: String, CaseIterable, Codable {
     case eat = "Eat"
     case live = "Live"
@@ -52,8 +52,22 @@ enum ExpenseCategory: String, CaseIterable, Codable {
         case .other: return .gray
         }
     }
+    
+    // ✅ Fix: NSLocalizedString → L() 로 교체
+    // NSLocalizedString은 기기 언어만 따르므로 앱 내 언어 설정이 무시됨
+    var localizedName: String {
+        switch self {
+        case .eat:   return L("category.eat")
+        case .live:  return L("category.live")
+        case .wear:  return L("category.wear")
+        case .enjoy: return L("category.enjoy")
+        case .edu:   return L("category.edu")
+        case .ride:  return L("category.ride")
+        case .other: return L("category.other")
+        }
+    }
 }
-
+ 
 // MARK: - Storage
 class BeeHiveStore: ObservableObject {
     @Published var expenses: [Expense] = []
@@ -71,31 +85,24 @@ class BeeHiveStore: ObservableObject {
     
     func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
-            if granted {
-                self.scheduleEveningReminder()
-            }
+            if granted { self.scheduleEveningReminder() }
         }
     }
-
+ 
     func scheduleEveningReminder() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["beehive_evening"])
-        
         let content = UNMutableNotificationContent()
         content.title = "🐝 BeeHive"
-        content.body = "Don't forget to log your expenses today!"
+        content.body = L("settings.notification.body")
         content.sound = .default
-        
         var dateComponents = DateComponents()
-        dateComponents.hour = 21  // 저녁 9시
+        dateComponents.hour = 21
         dateComponents.minute = 0
-        
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
         let request = UNNotificationRequest(identifier: "beehive_evening", content: content, trigger: trigger)
-        
         UNUserNotificationCenter.current().add(request)
     }
     
-    // 꿀 상태
     var honeyStatus: String {
         switch streak {
         case 0: return "🫙"
@@ -109,12 +116,12 @@ class BeeHiveStore: ObservableObject {
     
     var honeyMessage: String {
         switch streak {
-        case 0: return "Start logging to fill your hive!"
-        case 1: return "Great start! Keep going 🐝"
-        case 2: return "2 days strong!"
-        case 3, 4: return "The hive is filling up! 🍯"
-        case 5, 6: return "Amazing streak! 🐝🐝"
-        default: return "Your hive is overflowing! 🏆"
+        case 0: return L("streak.message.0")
+        case 1: return L("streak.message.1")
+        case 2: return L("streak.message.2")
+        case 3, 4: return L("streak.message.3")
+        case 5, 6: return L("streak.message.5")
+        default: return L("streak.message.7")
         }
     }
     
@@ -131,10 +138,7 @@ class BeeHiveStore: ObservableObject {
     }
     
     func updateStreak() {
-        guard let last = lastLoggedDate else {
-            streak = 0
-            return
-        }
+        guard let last = lastLoggedDate else { streak = 0; return }
         let daysSince = Calendar.current.dateComponents([.day], from: last, to: Date()).day ?? 0
         if daysSince >= 3 {
             streak = 0
@@ -149,9 +153,7 @@ class BeeHiveStore: ObservableObject {
         let today = Calendar.current.startOfDay(for: Date())
         if let last = lastLoggedDate {
             let lastDay = Calendar.current.startOfDay(for: last)
-            if lastDay != today {
-                streak += 1
-            }
+            if lastDay != today { streak += 1 }
         } else {
             streak = 1
         }
@@ -175,13 +177,9 @@ class BeeHiveStore: ObservableObject {
         }.reduce(0) { $0 + $1.amount }
     }
     
-    // 카테고리별 사용 빈도 (자주 쓰는 순)
     var sortedCategories: [ExpenseCategory] {
-        let counts = Dictionary(grouping: expenses, by: { $0.category })
-            .mapValues { $0.count }
-        return ExpenseCategory.allCases.sorted {
-            (counts[$0] ?? 0) > (counts[$1] ?? 0)
-        }
+        let counts = Dictionary(grouping: expenses, by: { $0.category }).mapValues { $0.count }
+        return ExpenseCategory.allCases.sorted { (counts[$0] ?? 0) > (counts[$1] ?? 0) }
     }
     
     private var sharedDefaults: UserDefaults {
@@ -206,15 +204,18 @@ class BeeHiveStore: ObservableObject {
         lastLoggedDate = sharedDefaults.object(forKey: lastLoggedKey) as? Date
     }
 }
-
+ 
 // MARK: - Main View
 struct ContentView: View {
+    @EnvironmentObject var languageManager: LanguageManager
     @StateObject private var store = BeeHiveStore()
     @State private var showingAddExpense = false
-    
     @State private var showingSimulator = false
     
     var body: some View {
+        // ✅ Fix: .refreshOnLanguageChange() 제거
+        // TabView에 .id()가 붙으면 언어 변경 시 TabView 전체가 재생성되어
+        // 탭 인덱스가 0(홈)으로 리셋되는 버그 발생 → 각 탭 내부에서 처리
         TabView {
             // 홈 탭
             NavigationView {
@@ -224,14 +225,13 @@ struct ContentView: View {
                         SummaryCard(store: store)
                         TodayExpensesList(store: store)
                         
-                        // 시뮬레이터 버튼
                         Button(action: { showingSimulator = true }) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("🐝 Path to Freedom")
+                                    Text(L("home.simulator.button.title"))
                                         .fontWeight(.semibold)
                                         .foregroundColor(.primary)
-                                    Text("See when you'll be financially free")
+                                    Text(L("home.simulator.button.subtitle"))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -248,18 +248,7 @@ struct ContentView: View {
                                 SimulatorView()
                                     .toolbar {
                                         ToolbarItem(placement: .navigationBarTrailing) {
-                                            Button("Done") { showingSimulator = false }
-                                        }
-                                    }
-                            }
-                        }
-                        
-                        .sheet(isPresented: $showingSimulator) {
-                            NavigationView {
-                                SimulatorView()
-                                    .toolbar {
-                                        ToolbarItem(placement: .navigationBarTrailing) {
-                                            Button("Done") { showingSimulator = false }
+                                            Button(L("common.done")) { showingSimulator = false }
                                         }
                                     }
                             }
@@ -284,36 +273,37 @@ struct ContentView: View {
                     store.requestNotificationPermission()
                 }
             }
+            .refreshOnLanguageChange() // ✅ 각 탭에 개별 적용
             .tabItem {
                 Image(systemName: "house.fill")
-                Text("Home")
+                Text(L("tab.home"))
             }
             
-            // 통계 탭
             StatsView(store: store)
+                .refreshOnLanguageChange() // ✅ 각 탭에 개별 적용
                 .tabItem {
                     Image(systemName: "chart.bar.fill")
-                    Text("Spending")
+                    Text(L("tab.spending"))
                 }
-            // 자산 탭
+            
             AssetsView()
+                .refreshOnLanguageChange() // ✅ 각 탭에 개별 적용
                 .tabItem {
                     Image(systemName: "chart.pie.fill")
-                    Text("Assets")
+                    Text(L("tab.assets"))
                 }
             
-            // Settings 탭
             SettingsView()
+                .refreshOnLanguageChange() // ✅ 각 탭에 개별 적용
                 .tabItem {
                     Image(systemName: "gearshape.fill")
-                    Text("Settings")
+                    Text(L("tab.settings"))
                 }
-            
         }
         .accentColor(.yellow)
     }
 }
-
+ 
 // MARK: - Honey Streak Card
 struct HoneyStreakCard: View {
     @ObservedObject var store: BeeHiveStore
@@ -322,7 +312,7 @@ struct HoneyStreakCard: View {
         VStack(spacing: 12) {
             Text(store.honeyStatus)
                 .font(.system(size: 60))
-            Text("\(store.streak) day streak")
+            Text(String(format: L("streak.days"), store.streak))
                 .font(.title2)
                 .fontWeight(.bold)
             Text(store.honeyMessage)
@@ -335,7 +325,7 @@ struct HoneyStreakCard: View {
         .cornerRadius(20)
     }
 }
-
+ 
 // MARK: - Summary Card
 struct SummaryCard: View {
     @ObservedObject var store: BeeHiveStore
@@ -343,10 +333,10 @@ struct SummaryCard: View {
     var body: some View {
         HStack(spacing: 0) {
             VStack(spacing: 6) {
-                Text("Today")
+                Text(L("summary.today"))
                     .font(.caption)
                     .foregroundColor(.secondary)
-                Text("$\(store.todayTotal, specifier: "%.0f")")
+                Text(formatCurrency(store.todayTotal))
                     .font(.title3)
                     .fontWeight(.bold)
             }
@@ -355,10 +345,10 @@ struct SummaryCard: View {
             Divider().frame(height: 40)
             
             VStack(spacing: 6) {
-                Text("This Month")
+                Text(L("summary.thisMonth"))
                     .font(.caption)
                     .foregroundColor(.secondary)
-                Text("$\(store.monthlyTotal, specifier: "%.0f")")
+                Text(formatCurrency(store.monthlyTotal))
                     .font(.title3)
                     .fontWeight(.bold)
             }
@@ -370,21 +360,21 @@ struct SummaryCard: View {
         .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
     }
 }
-
+ 
 // MARK: - Today Expenses List
 struct TodayExpensesList: View {
     @ObservedObject var store: BeeHiveStore
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Today's Expenses")
+            Text(L("home.todayExpenses"))
                 .font(.headline)
             
             if store.todayExpenses.isEmpty {
                 VStack(spacing: 8) {
                     Text("🐝")
                         .font(.system(size: 36))
-                    Text("No expenses yet today!")
+                    Text(L("home.todayExpenses.empty"))
                         .foregroundColor(.secondary)
                         .font(.subheadline)
                 }
@@ -398,9 +388,8 @@ struct TodayExpensesList: View {
                             .frame(width: 44, height: 44)
                             .background(expense.category.color.opacity(0.15))
                             .cornerRadius(12)
-                        
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(expense.category.rawValue)
+                            Text(expense.category.localizedName)
                                 .fontWeight(.medium)
                             if !expense.note.isEmpty {
                                 Text(expense.note)
@@ -408,10 +397,8 @@ struct TodayExpensesList: View {
                                     .foregroundColor(.secondary)
                             }
                         }
-                        
                         Spacer()
-                        
-                        Text("-$\(expense.amount, specifier: "%.0f")")
+                        Text("-\(formatCurrency(expense.amount))")
                             .fontWeight(.semibold)
                             .foregroundColor(.red)
                     }
@@ -427,7 +414,7 @@ struct TodayExpensesList: View {
         .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
     }
 }
-
+ 
 // MARK: - Add Expense View
 struct AddExpenseView: View {
     @ObservedObject var store: BeeHiveStore
@@ -440,13 +427,12 @@ struct AddExpenseView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // 금액 입력 (크게)
                 VStack(spacing: 8) {
-                    Text("How much?")
+                    Text(L("addExpense.howMuch"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text("$")
+                        Text(UserDefaults.standard.string(forKey: "appLanguage") == "ko" ? "₩" : "$")
                             .font(.title)
                             .foregroundColor(.secondary)
                         Text(amount.isEmpty ? "0" : amount)
@@ -457,7 +443,6 @@ struct AddExpenseView: View {
                 .padding(.vertical, 30)
                 .background(Color.yellow.opacity(0.1))
                 
-                // 카테고리 (자주 쓰는 순)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         ForEach(store.sortedCategories, id: \.self) { category in
@@ -471,7 +456,7 @@ struct AddExpenseView: View {
                                         RoundedRectangle(cornerRadius: 14)
                                             .stroke(selectedCategory == category ? category.color : Color.clear, lineWidth: 2)
                                     )
-                                Text(category.rawValue)
+                                Text(category.localizedName)
                                     .font(.caption2)
                                     .foregroundColor(selectedCategory == category ? category.color : .secondary)
                             }
@@ -482,31 +467,27 @@ struct AddExpenseView: View {
                 }
                 .padding(.vertical, 16)
                 
-                // 메모
-                TextField("Note (optional)", text: $note)
+                TextField(L("addExpense.note.placeholder"), text: $note)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
                     .padding(.horizontal)
                 
-                // 숫자 키패드
                 NumpadView(amount: $amount)
                     .padding(.top, 16)
                 
                 Spacer()
             }
-            .navigationTitle("Add Expense")
+            .navigationTitle(L("addExpense.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button(L("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveExpense()
-                    }
-                    .fontWeight(.bold)
-                    .disabled(amount.isEmpty || amount == "0")
+                    Button(L("common.save")) { saveExpense() }
+                        .fontWeight(.bold)
+                        .disabled(amount.isEmpty || amount == "0")
                 }
             }
         }
@@ -515,15 +496,11 @@ struct AddExpenseView: View {
     func saveExpense() {
         guard let amountDouble = Double(amount), amountDouble > 0 else { return }
         store.incrementStreak()
-        store.addExpense(Expense(
-            amount: amountDouble,
-            category: selectedCategory,
-            note: note
-        ))
+        store.addExpense(Expense(amount: amountDouble, category: selectedCategory, note: note))
         dismiss()
     }
 }
-
+ 
 // MARK: - Custom Numpad
 struct NumpadView: View {
     @Binding var amount: String
@@ -568,7 +545,7 @@ struct NumpadView: View {
         }
     }
 }
-
+ 
 #Preview {
     ContentView()
 }

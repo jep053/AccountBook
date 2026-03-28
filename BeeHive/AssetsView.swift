@@ -42,19 +42,26 @@ enum AssetType: String, CaseIterable, Codable {
         case .other: return .gray
         }
     }
+    
+    var localizedName: String {
+        switch self {
+        case .bankSavings: return L("assets.type.bankSavings")
+        case .bankDeposit: return L("assets.type.bankDeposit")
+        case .stocks:      return L("assets.type.stocks")
+        case .retirement:  return L("assets.type.retirement")
+        case .other:       return L("assets.type.other")
+        }
+    }
 }
 
 // MARK: - Assets Store
 class AssetsStore: ObservableObject {
     @Published var assets: [Asset] = []
-    
     private let key = "beehive_assets"
     
     init() { load() }
     
-    var totalAssets: Double {
-        assets.reduce(0) { $0 + $1.amount }
-    }
+    var totalAssets: Double { assets.reduce(0) { $0 + $1.amount } }
     
     var assetsByType: [(type: AssetType, total: Double)] {
         let grouped = Dictionary(grouping: assets, by: { $0.type })
@@ -65,20 +72,11 @@ class AssetsStore: ObservableObject {
         }.sorted { $0.total > $1.total }
     }
     
-    func addAsset(_ asset: Asset) {
-        assets.append(asset)
-        save()
-    }
-    
-    func deleteAsset(at offsets: IndexSet) {
-        assets.remove(atOffsets: offsets)
-        save()
-    }
-    
+    func addAsset(_ asset: Asset) { assets.append(asset); save() }
+    func deleteAsset(at offsets: IndexSet) { assets.remove(atOffsets: offsets); save() }
     func updateAsset(_ asset: Asset) {
         if let index = assets.firstIndex(where: { $0.id == asset.id }) {
-            assets[index] = asset
-            save()
+            assets[index] = asset; save()
         }
     }
     
@@ -87,7 +85,6 @@ class AssetsStore: ObservableObject {
             UserDefaults.standard.set(encoded, forKey: key)
         }
     }
-    
     private func load() {
         if let data = UserDefaults.standard.data(forKey: key),
            let decoded = try? JSONDecoder().decode([Asset].self, from: data) {
@@ -98,6 +95,7 @@ class AssetsStore: ObservableObject {
 
 // MARK: - Assets View
 struct AssetsView: View {
+    @EnvironmentObject var languageManager: LanguageManager
     @StateObject private var store = AssetsStore()
     @State private var showingAddAsset = false
     
@@ -105,12 +103,11 @@ struct AssetsView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // 총 자산 카드
                     VStack(spacing: 8) {
-                        Text("Total Assets")
+                        Text(L("assets.totalAssets"))
                             .font(.subheadline)
                             .foregroundColor(.white.opacity(0.8))
-                        Text("$\(store.totalAssets, specifier: "%.0f")")
+                        Text(formatCurrency(store.totalAssets))
                             .font(.system(size: 44, weight: .bold))
                             .foregroundColor(.white)
                     }
@@ -119,12 +116,10 @@ struct AssetsView: View {
                     .background(Color.green.gradient)
                     .cornerRadius(20)
                     
-                    // 카테고리별 요약
                     if !store.assetsByType.isEmpty {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("By Category")
+                            Text(L("assets.byCategory"))
                                 .font(.headline)
-                            
                             ForEach(store.assetsByType, id: \.type) { item in
                                 HStack {
                                     Text(item.type.icon)
@@ -132,18 +127,15 @@ struct AssetsView: View {
                                         .frame(width: 44, height: 44)
                                         .background(item.type.color.opacity(0.15))
                                         .cornerRadius(12)
-                                    
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(item.type.rawValue)
+                                        Text(item.type.localizedName)
                                             .fontWeight(.medium)
                                         Text("\(Int(item.total / store.totalAssets * 100))%")
                                             .font(.caption)
                                             .foregroundColor(.secondary)
                                     }
-                                    
                                     Spacer()
-                                    
-                                    Text("$\(item.total, specifier: "%.0f")")
+                                    Text(formatCurrency(item.total))
                                         .fontWeight(.semibold)
                                         .foregroundColor(item.type.color)
                                 }
@@ -156,20 +148,14 @@ struct AssetsView: View {
                         .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
                     }
                     
-                    // 자산 목록
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("All Assets")
+                        Text(L("assets.allAssets"))
                             .font(.headline)
-                        
                         if store.assets.isEmpty {
                             VStack(spacing: 8) {
-                                Text("🏦")
-                                    .font(.system(size: 40))
-                                Text("No assets yet!")
-                                    .foregroundColor(.secondary)
-                                Text("Tap + to add your first asset")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                Text("🏦").font(.system(size: 40))
+                                Text(L("assets.empty.title")).foregroundColor(.secondary)
+                                Text(L("assets.empty.subtitle")).font(.caption).foregroundColor(.secondary)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 24)
@@ -187,7 +173,7 @@ struct AssetsView: View {
                 }
                 .padding()
             }
-            .navigationTitle("🏦 Assets")
+            .navigationTitle(L("assets.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -201,6 +187,7 @@ struct AssetsView: View {
             .sheet(isPresented: $showingAddAsset) {
                 AddAssetView(store: store)
             }
+            .refreshOnLanguageChange()
         }
     }
 }
@@ -218,18 +205,12 @@ struct AssetRow: View {
                 .frame(width: 44, height: 44)
                 .background(asset.type.color.opacity(0.15))
                 .cornerRadius(12)
-            
             VStack(alignment: .leading, spacing: 2) {
-                Text(asset.name)
-                    .fontWeight(.medium)
-                Text(asset.type.rawValue)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text(asset.name).fontWeight(.medium)
+                Text(asset.type.localizedName).font(.caption).foregroundColor(.secondary)
             }
-            
             Spacer()
-            
-            Text("$\(asset.amount, specifier: "%.0f")")
+            Text(formatCurrency(asset.amount))
                 .fontWeight(.semibold)
                 .foregroundColor(.green)
         }
@@ -245,7 +226,6 @@ struct AssetRow: View {
 struct AddAssetView: View {
     @ObservedObject var store: AssetsStore
     @Environment(\.dismiss) var dismiss
-    
     @State private var name = ""
     @State private var amount = ""
     @State private var selectedType: AssetType = .bankSavings
@@ -253,21 +233,19 @@ struct AddAssetView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Details") {
-                    TextField("Asset name (e.g. Chase Savings)", text: $name)
-                    TextField("Amount", text: $amount)
+                Section(L("assets.section.details")) {
+                    TextField(L("assets.name.placeholder"), text: $name)
+                    TextField(L("assets.amount.placeholder"), text: $amount)
                         .keyboardType(.numberPad)
                 }
-                
-                Section("Type") {
+                Section(L("assets.section.type")) {
                     ForEach(AssetType.allCases, id: \.self) { type in
                         HStack {
                             Text(type.icon)
-                            Text(type.rawValue)
+                            Text(type.localizedName)
                             Spacer()
                             if selectedType == type {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.green)
+                                Image(systemName: "checkmark").foregroundColor(.green)
                             }
                         }
                         .contentShape(Rectangle())
@@ -275,14 +253,14 @@ struct AddAssetView: View {
                     }
                 }
             }
-            .navigationTitle("Add Asset")
+            .navigationTitle(L("assets.add.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button(L("assets.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") { save() }
+                    Button(L("assets.save")) { save() }
                         .fontWeight(.bold)
                         .disabled(name.isEmpty || amount.isEmpty)
                 }
@@ -302,7 +280,6 @@ struct EditAssetView: View {
     let asset: Asset
     @ObservedObject var store: AssetsStore
     @Environment(\.dismiss) var dismiss
-    
     @State private var name: String
     @State private var amount: String
     @State private var selectedType: AssetType
@@ -318,30 +295,27 @@ struct EditAssetView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Details") {
-                    TextField("Asset name", text: $name)
-                    TextField("Amount", text: $amount)
+                Section(L("assets.section.details")) {
+                    TextField(L("assets.name.edit.placeholder"), text: $name)
+                    TextField(L("assets.amount.placeholder"), text: $amount)
                         .keyboardType(.numberPad)
                 }
-                
-                Section("Type") {
+                Section(L("assets.section.type")) {
                     ForEach(AssetType.allCases, id: \.self) { type in
                         HStack {
                             Text(type.icon)
-                            Text(type.rawValue)
+                            Text(type.localizedName)
                             Spacer()
                             if selectedType == type {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.green)
+                                Image(systemName: "checkmark").foregroundColor(.green)
                             }
                         }
                         .contentShape(Rectangle())
                         .onTapGesture { selectedType = type }
                     }
                 }
-                
                 Section {
-                    Button("Delete Asset") {
+                    Button(L("assets.delete")) {
                         if let index = store.assets.firstIndex(where: { $0.id == asset.id }) {
                             store.deleteAsset(at: IndexSet([index]))
                         }
@@ -350,14 +324,14 @@ struct EditAssetView: View {
                     .foregroundColor(.red)
                 }
             }
-            .navigationTitle("Edit Asset")
+            .navigationTitle(L("assets.edit.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button(L("assets.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") { save() }
+                    Button(L("assets.save")) { save() }
                         .fontWeight(.bold)
                         .disabled(name.isEmpty || amount.isEmpty)
                 }
@@ -367,9 +341,7 @@ struct EditAssetView: View {
     
     func save() {
         guard let amountDouble = Double(amount) else { return }
-        var updated = asset
-        updated = Asset(id: asset.id, name: name, amount: amountDouble, type: selectedType)
-        store.updateAsset(updated)
+        store.updateAsset(Asset(id: asset.id, name: name, amount: amountDouble, type: selectedType))
         dismiss()
     }
 }

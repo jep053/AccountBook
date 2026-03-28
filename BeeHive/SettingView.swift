@@ -2,6 +2,7 @@ import SwiftUI
 import UserNotifications
 
 struct SettingsView: View {
+    @EnvironmentObject var languageManager: LanguageManager
     @AppStorage("userName") var userName: String = ""
     @AppStorage("retirementAge") var retirementAge: Int = 45
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = true
@@ -16,27 +17,23 @@ struct SettingsView: View {
         return Calendar.current.dateComponents([.year], from: birthday, to: Date()).year ?? 0
     }
     
-    var yearsLeft: Int {
-        max(0, retirementAge - currentAge)
-    }
+    var yearsLeft: Int { max(0, retirementAge - currentAge) }
     
     var body: some View {
         NavigationView {
             Form {
-                // 프로필
-                Section("Profile") {
+                Section(L("settings.section.profile")) {
                     NavigationLink(destination: ProfileEditView(
                         userName: $userName,
                         retirementAge: $retirementAge,
                         birthdayTimestamp: $birthdayTimestamp
                     )) {
                         HStack {
-                            Text("🐝")
-                                .font(.system(size: 40))
+                            Text("🐝").font(.system(size: 40))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(userName.isEmpty ? "Your name" : userName)
+                                Text(userName.isEmpty ? L("settings.profile.placeholder") : userName)
                                     .font(.headline)
-                                Text("Age \(currentAge) · Goal: \(retirementAge) · \(yearsLeft) years left")
+                                Text(String(format: L("settings.profile.subtitle"), currentAge, retirementAge, yearsLeft))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -45,65 +42,71 @@ struct SettingsView: View {
                     }
                 }
                 
-                // 알림 설정
-                Section("Notifications") {
+                Section(L("settings.section.notifications")) {
                     HStack {
-                        Text("Reminder Time")
+                        // ✅ Fix: "settings.notifications.reminderTime" → L()
+                        Text(L("settings.notifications.reminderTime"))
                         Spacer()
-                        Stepper("\(notificationHour):00", value: $notificationHour, in: 0...23)
-                            .onChange(of: notificationHour) {
-                                updateNotification()
-                            }
+                        Stepper(
+                            String(format: L("settings.notifications.reminderTime.format"), notificationHour),
+                            value: $notificationHour, in: 0...23
+                        )
+                        .onChange(of: notificationHour) { updateNotification() }
                     }
-                    Text("You'll get a daily reminder to log your expenses 🐝")
+                    // ✅ Fix: "settings.notifications.description" → L()
+                    Text(L("settings.notifications.description"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 
-                // 앱 정보
-                Section("About") {
+                Section(L("settings.section.about")) {
                     HStack {
-                        Text("Version")
+                        // ✅ Fix: "settings.about.version" → L()
+                        Text(L("settings.about.version"))
                         Spacer()
-                        Text("1.0.0")
-                            .foregroundColor(.secondary)
+                        Text("1.0.0").foregroundColor(.secondary)
                     }
                     HStack {
-                        Text("Made with")
+                        // ✅ Fix: "settings.about.madeWith" → L()
+                        Text(L("settings.about.madeWith"))
                         Spacer()
-                        Text("🐝 & ❤️")
+                        // ✅ Fix: "settings.about.madeWith.value" → L()
+                        Text(L("settings.about.madeWith.value"))
                     }
                 }
                 
-                // 리셋
                 Section {
                     Button(action: { showingResetAlert = true }) {
                         HStack {
                             Image(systemName: "arrow.counterclockwise")
-                            Text("Reset Onboarding")
+                            // ✅ Fix: "settings.reset.button" → L()
+                            Text(L("settings.reset.button"))
                         }
                         .foregroundColor(.red)
                     }
                 }
             }
-            .navigationTitle("⚙️ Settings")
+            // ✅ Fix: "settings.title" → L()
+            .navigationTitle(L("settings.title"))
             .navigationBarTitleDisplayMode(.inline)
-            .alert("Reset BeeHive?", isPresented: $showingResetAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Reset", role: .destructive) {
+            .alert(L("settings.reset.alert.title"), isPresented: $showingResetAlert) {
+                Button(L("settings.reset.alert.cancel"), role: .cancel) {}
+                Button(L("settings.reset.alert.confirm"), role: .destructive) {
                     hasCompletedOnboarding = false
                 }
             } message: {
-                Text("This will take you back to the onboarding screen.")
+                // ✅ Fix: "settings.reset.alert.message" → L()
+                Text(L("settings.reset.alert.message"))
             }
         }
+        .refreshOnLanguageChange()
     }
     
     func updateNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["beehive_evening"])
         let content = UNMutableNotificationContent()
         content.title = "🐝 BeeHive"
-        content.body = "Don't forget to log your expenses today!"
+        content.body = L("settings.notification.body")
         content.sound = .default
         var dateComponents = DateComponents()
         dateComponents.hour = notificationHour
@@ -114,7 +117,7 @@ struct SettingsView: View {
     }
 }
 
-// 프로필 편집 화면
+// MARK: - Profile Edit View
 struct ProfileEditView: View {
     @Binding var userName: String
     @Binding var retirementAge: Int
@@ -134,35 +137,34 @@ struct ProfileEditView: View {
     
     var body: some View {
         Form {
-            Section("Name") {
-                TextField("Your name", text: $userName)
+            Section(L("profile.section.name")) {
+                // ✅ Fix: placeholder도 L()로
+                TextField(L("profile.name.placeholder"), text: $userName)
             }
             
-            Section("Birthday") {
+            Section(L("profile.section.birthday")) {
                 DatePicker(
-                    "Birthday",
+                    L("profile.birthday.label"),
                     selection: $birthday,
                     in: ...Date(),
                     displayedComponents: .date
                 )
-                .onChange(of: birthday) {
-                    birthdayTimestamp = birthday.timeIntervalSince1970
-                }
+                .onChange(of: birthday) { birthdayTimestamp = birthday.timeIntervalSince1970 }
                 
                 HStack {
-                    Text("Current Age")
+                    // ✅ Fix: "profile.currentAge" → L()
+                    Text(L("profile.currentAge"))
                     Spacer()
-                    Text("\(currentAge)")
-                        .foregroundColor(.yellow)
-                        .fontWeight(.semibold)
+                    Text("\(currentAge)").foregroundColor(.yellow).fontWeight(.semibold)
                 }
             }
             
-            Section("Goal") {
+            Section(L("profile.section.goal")) {
                 HStack {
-                    Text("Goal Age")
+                    // ✅ Fix: "profile.goalAge" → L()
+                    Text(L("profile.goalAge"))
                     Spacer()
-                    TextField("e.g. 45", text: $retirementAgeText)
+                    TextField(L("profile.goalAge.placeholder"), text: $retirementAgeText)
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
                         .foregroundColor(.yellow)
@@ -174,7 +176,7 @@ struct ProfileEditView: View {
                 Section {
                     HStack {
                         Spacer()
-                        Text("🐝 \(yearsLeft) years to financial freedom!")
+                        Text(String(format: L("profile.yearsLeft"), yearsLeft))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -182,7 +184,8 @@ struct ProfileEditView: View {
                 }
             }
         }
-        .navigationTitle("Edit Profile")
+        // ✅ Fix: "profile.title" → L()
+        .navigationTitle(L("profile.title"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             if birthdayTimestamp > 0 {

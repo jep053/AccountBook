@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct SimulatorView: View {
+    @EnvironmentObject var languageManager: LanguageManager
     @AppStorage("birthday") var birthdayTimestamp: Double = 0
     @AppStorage("retirementAge") var retirementAge: Int = 45
     
-    // 입력값
     @State private var currentAssets: String = ""
     @State private var monthlyIncome: String = ""
     @State private var monthlyExpenses: String = ""
@@ -17,7 +17,6 @@ struct SimulatorView: View {
         return Calendar.current.dateComponents([.year], from: birthday, to: Date()).year ?? 25
     }
     
-    // 시뮬레이션 결과
     struct YearlySnapshot {
         let age: Int
         let assets: Double
@@ -41,32 +40,18 @@ struct SimulatorView: View {
         let inflationDecimal = inflation / 100
         
         for age in currentAge...90 {
-            // 4% Rule: 자산이 연 지출의 25배 이상이면 경제적 자유
             let isFreedom = currentAssetValue >= currentExpense * 25
-            
-            snapshots.append(YearlySnapshot(
-                age: age,
-                assets: currentAssetValue,
-                annualExpenses: currentExpense,
-                isFreedom: isFreedom
-            ))
-            
+            snapshots.append(YearlySnapshot(age: age, assets: currentAssetValue, annualExpenses: currentExpense, isFreedom: isFreedom))
             if isFreedom && age > currentAge { break }
-            
-            // 다음 해 계산
             let savingsRate = max(0, annualIncome - currentExpense)
             currentAssetValue = currentAssetValue * (1 + returnRateDecimal) + savingsRate
             currentExpense = currentExpense * (1 + inflationDecimal)
-            
             if snapshots.count > 70 { break }
         }
-        
         return snapshots
     }
     
-    var freedomAge: Int? {
-        simulation.first(where: { $0.isFreedom })?.age
-    }
+    var freedomAge: Int? { simulation.first(where: { $0.isFreedom })?.age }
     
     var yearsToFreedom: Int? {
         guard let age = freedomAge else { return nil }
@@ -76,28 +61,33 @@ struct SimulatorView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // 헤더
                 VStack(spacing: 8) {
-                    Text("🐝")
-                        .font(.system(size: 50))
-                    Text("Freedom Simulator")
+                    Text("🐝").font(.system(size: 50))
+                    // ✅ Fix
+                    Text(L("simulator.header.title"))
                         .font(.title2)
                         .fontWeight(.bold)
-                    Text("Based on the 4% Rule")
+                    Text(L("simulator.header.subtitle"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 .padding(.top)
                 
-                // 입력 섹션
                 VStack(spacing: 16) {
-                    inputRow(title: "Current Assets ($)", placeholder: "e.g. 50000", binding: $currentAssets)
-                    inputRow(title: "Monthly Income ($)", placeholder: "e.g. 3000", binding: $monthlyIncome)
-                    inputRow(title: "Monthly Expenses ($)", placeholder: "e.g. 2000", binding: $monthlyExpenses)
+                    inputRow(title: L("simulator.input.currentAssets"),
+                             placeholder: L("simulator.input.currentAssets.placeholder"),
+                             binding: $currentAssets)
+                    inputRow(title: L("simulator.input.monthlyIncome"),
+                             placeholder: L("simulator.input.monthlyIncome.placeholder"),
+                             binding: $monthlyIncome)
+                    inputRow(title: L("simulator.input.monthlyExpenses"),
+                             placeholder: L("simulator.input.monthlyExpenses.placeholder"),
+                             binding: $monthlyExpenses)
                     
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Annual Return (%)")
+                            // ✅ Fix
+                            Text(L("simulator.input.annualReturn"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             TextField("7", text: $annualReturn)
@@ -106,9 +96,9 @@ struct SimulatorView: View {
                                 .background(Color(.systemGray6))
                                 .cornerRadius(10)
                         }
-                        
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Inflation (%)")
+                            // ✅ Fix
+                            Text(L("simulator.input.inflation"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             TextField("3", text: $inflationRate)
@@ -124,25 +114,18 @@ struct SimulatorView: View {
                 .cornerRadius(16)
                 .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
                 
-                // 결과
                 if !simulation.isEmpty {
-                    // 결과 카드
                     VStack(spacing: 12) {
                         if let years = yearsToFreedom, let age = freedomAge {
                             VStack(spacing: 8) {
-                                Text("🍯")
-                                    .font(.system(size: 44))
-                                Text("Financial Freedom at \(age)!")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                Text("\(years) years from now")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                
+                                Text("🍯").font(.system(size: 44))
+                                Text(String(format: L("simulator.result.freedom"), age))
+                                    .font(.title3).fontWeight(.bold)
+                                Text(String(format: L("simulator.result.yearsFromNow"), years))
+                                    .font(.subheadline).foregroundColor(.secondary)
                                 if let snapshot = simulation.first(where: { $0.age == age }) {
-                                    Text("Target Assets: $\(snapshot.assets, specifier: "%.0f")")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                    Text(String(format: L("simulator.result.targetAssets"), formatCurrency(snapshot.assets)))
+                                        .font(.caption).foregroundColor(.secondary)
                                 }
                             }
                             .frame(maxWidth: .infinity)
@@ -151,14 +134,12 @@ struct SimulatorView: View {
                             .cornerRadius(16)
                         } else {
                             VStack(spacing: 8) {
-                                Text("😢")
-                                    .font(.system(size: 44))
-                                Text("Keep saving!")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                Text("Try increasing income or reducing expenses")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                Text("😢").font(.system(size: 44))
+                                // ✅ Fix
+                                Text(L("simulator.result.keepSaving"))
+                                    .font(.title3).fontWeight(.bold)
+                                Text(L("simulator.result.keepSaving.subtitle"))
+                                    .font(.caption).foregroundColor(.secondary)
                                     .multilineTextAlignment(.center)
                             }
                             .frame(maxWidth: .infinity)
@@ -168,27 +149,19 @@ struct SimulatorView: View {
                         }
                     }
                     
-                    // 자산 성장 차트
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Asset Growth")
-                            .font(.headline)
-                        
+                        // ✅ Fix
+                        Text(L("simulator.chart.title")).font(.headline)
                         let maxAssets = simulation.map { $0.assets }.max() ?? 1
-                        
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(alignment: .bottom, spacing: 8) {
                                 ForEach(simulation, id: \.age) { snapshot in
                                     VStack(spacing: 4) {
-                                        if snapshot.isFreedom {
-                                            Text("🐝")
-                                                .font(.caption2)
-                                        }
+                                        if snapshot.isFreedom { Text("🐝").font(.caption2) }
                                         RoundedRectangle(cornerRadius: 4)
                                             .fill(snapshot.isFreedom ? Color.yellow : Color.yellow.opacity(0.4))
                                             .frame(width: 24, height: max(4, CGFloat(snapshot.assets / maxAssets) * 150))
-                                        Text("\(snapshot.age)")
-                                            .font(.system(size: 8))
-                                            .foregroundColor(.secondary)
+                                        Text("\(snapshot.age)").font(.system(size: 8)).foregroundColor(.secondary)
                                     }
                                 }
                             }
@@ -201,24 +174,20 @@ struct SimulatorView: View {
                     .cornerRadius(16)
                     .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
                     
-                    // 연도별 테이블
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Year by Year")
-                            .font(.headline)
-                        
+                        // ✅ Fix
+                        Text(L("simulator.table.title")).font(.headline)
                         ForEach(simulation, id: \.age) { snapshot in
                             HStack {
-                                Text("Age \(snapshot.age)")
+                                Text(String(format: L("simulator.table.age"), snapshot.age))
                                     .font(.subheadline)
                                     .foregroundColor(snapshot.isFreedom ? .yellow : .primary)
                                     .fontWeight(snapshot.isFreedom ? .bold : .regular)
                                 Spacer()
-                                Text("$\(snapshot.assets, specifier: "%.0f")")
+                                Text(formatCurrency(snapshot.assets))
                                     .font(.subheadline)
                                     .foregroundColor(snapshot.isFreedom ? .yellow : .secondary)
-                                if snapshot.isFreedom {
-                                    Text("🐝")
-                                }
+                                if snapshot.isFreedom { Text("🐝") }
                             }
                             Divider()
                         }
@@ -231,15 +200,15 @@ struct SimulatorView: View {
             }
             .padding()
         }
-        .navigationTitle("🐝 Freedom Simulator")
+        // ✅ Fix
+        .navigationTitle(L("simulator.title"))
         .navigationBarTitleDisplayMode(.inline)
+        .refreshOnLanguageChange()
     }
     
     func inputRow(title: String, placeholder: String, binding: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Text(title).font(.caption).foregroundColor(.secondary)
             TextField(placeholder, text: binding)
                 .keyboardType(.numberPad)
                 .padding(10)
